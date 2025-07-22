@@ -66,8 +66,9 @@ class App(Sketch):
 
     def generate_flames(self):
         w, h = self.dimensions
-        x, y = np.random.randint(0, w), np.random.randint(0, h)
-        self.field[x, y] = 255
+        for x in range(w):
+            if not np.random.randint(0, 32):
+                self.field[x, -1] = 128 + np.random.randint(0, 128)
 
     def vertical_blur(self):
         """Вертикальное размытие"""
