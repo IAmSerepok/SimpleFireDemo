@@ -70,17 +70,45 @@ class App(Sketch):
         self.field[x, y] = 255
 
     def vertical_blur(self):
-        ...
+        """Вертикальное размытие"""
+        w, h = self.dimensions
+        temp_field = self.field.copy()
+        
+        for x in range(w):
+            for y in range(1, h-1):
+                temp_field[x, y] = (self.field[x, y - 1] + self.field[x, y] + self.field[x, y + 1]) // 3
+        
+        for x in range(w):
+            # Верхняя строка
+            temp_field[x, 0] = (self.field[x, 0] + self.field[x, 1]) // 3
+            # Нижняя строка
+            temp_field[x, h-1] = (self.field[x, h-2] + self.field[x, h-1]) // 3
+        
+        self.field = temp_field
 
-    def horisontal_blur(self):
-        ...
+    def horizontal_blur(self):
+        """Горизонтальное размытие"""
+        w, h = self.dimensions
+        temp_field = self.field.copy()
+        
+        for y in range(h):
+            for x in range(1, w-1):
+                temp_field[x, y] = (self.field[x-1, y] + self.field[x, y] + self.field[x+1, y]) // 3
+        
+        for y in range(h):
+            # Левый край
+            temp_field[0, y] = (self.field[0, y] + self.field[1, y]) // 3
+            # Правый край
+            temp_field[w-1, y] = (self.field[w-2, y] + self.field[w-1, y]) // 3
+        
+        self.field = temp_field
 
     def draw(self) -> None:
         """Совершает один шаг по времени"""
         self.render()
         self.generate_flames()
         self.vertical_blur()
-        self.horisontal_blur()
+        self.horizontal_blur()
 
 
 if __name__ == '__main__':
