@@ -65,10 +65,13 @@ class App(Sketch):
                 self.rect(x * dw, y * dh, (x + 1) * dw, (y + 1) * dh)
 
     def generate_flames(self):
+        """Генерирует источники тепла внизу экрана"""
         w, h = self.dimensions
-        for x in range(w):
+        for x in range(1, w - 1):
             if not np.random.randint(0, 32):
                 self.field[x, -1] = 128 + np.random.randint(0, 128)
+            elif self.field[x, -1] < 14:
+                self.field[x, -1] = 14
 
     def vertical_blur(self):
         """Вертикальное размытие"""
@@ -76,14 +79,14 @@ class App(Sketch):
         temp_field = self.field.copy()
         
         for x in range(w):
-            for y in range(1, h-1):
+            for y in range(1, h - 1):
                 temp_field[x, y] = (self.field[x, y - 1] + self.field[x, y] + self.field[x, y + 1]) // 3
         
         for x in range(w):
             # Верхняя строка
-            temp_field[x, 0] = (self.field[x, 0] + self.field[x, 1]) // 3
+            temp_field[x, 0] = (self.field[x, 0] * 2 + self.field[x, 1]) // 3
             # Нижняя строка
-            temp_field[x, h-1] = (self.field[x, h-2] + self.field[x, h-1]) // 3
+            temp_field[x, h - 1] = (self.field[x, h - 2] + 2 * self.field[x, h - 1]) // 3
         
         self.field = temp_field
 
@@ -93,25 +96,31 @@ class App(Sketch):
         temp_field = self.field.copy()
         
         for y in range(h):
-            for x in range(1, w-1):
-                temp_field[x, y] = (self.field[x-1, y] + self.field[x, y] + self.field[x+1, y]) // 3
+            for x in range(1, w - 1):
+                temp_field[x, y] = (self.field[x - 1, y] + self.field[x, y] + self.field[x + 1, y]) // 3
         
         for y in range(h):
             # Левый край
-            temp_field[0, y] = (self.field[0, y] + self.field[1, y]) // 3
+            temp_field[0, y] = (2 * self.field[0, y] + self.field[1, y]) // 3
             # Правый край
-            temp_field[w-1, y] = (self.field[w-2, y] + self.field[w-1, y]) // 3
+            temp_field[w - 1, y] = (self.field[w - 2, y] + 2 * self.field[w - 1, y]) // 3
         
         self.field = temp_field
+
+    def shift_field(self):
+        """Сдвигает всё поле вверх на 1 клетку, нижний ряд заполняется нулями"""
+        self.field[::, 0:-1] = self.field[::, 1:]
+        self.field[::, -1] = 0
 
     def draw(self) -> None:
         """Совершает один шаг по времени"""
         self.render()
+        self.shift_field()
         self.generate_flames()
         self.vertical_blur()
         self.horizontal_blur()
 
 
 if __name__ == '__main__':
-    app = App(width=80, height=25)
+    app = App(width=100, height=35)
     app.run_sketch()
